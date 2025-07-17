@@ -10,7 +10,7 @@ import { DeleteCommand } from '@aws-sdk/lib-dynamodb';
 // ✅ Define this early so it's available to both functions
 const TABLE_NAME = 'CMooreFlashcardLab';
 
-console.log("ENV REGION:", process.env.REACT_APP_AWS_REGION);
+
 
 const client = new DynamoDBClient({
   region: process.env.REACT_APP_AWS_REGION,
