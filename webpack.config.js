@@ -5,7 +5,7 @@ const Dotenv = require('dotenv-webpack');
 const sass = require('sass'); // Explicitly using Dart Sass engine
 
 // ✅ Define environment mode flag
-const isProd = process.env.NODE_ENV == 'production';
+const isProd = process.env.NODE_ENV ='production';
 console.log(isProd);
 module.exports = {
   entry: './src/index.js',
