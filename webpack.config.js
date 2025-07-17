@@ -1,7 +1,11 @@
 const path = require('path');
+const webpack = require('webpack');
 const HtmlWebpackPlugin = require('html-webpack-plugin');
 const Dotenv = require('dotenv-webpack');
 const sass = require('sass'); // Explicitly using Dart Sass engine
+
+// ✅ Define environment mode flag
+const isProd = process.env.NODE_ENV === 'production';
 
 module.exports = {
   entry: './src/index.js',
@@ -9,7 +13,7 @@ module.exports = {
     path: path.resolve(__dirname, 'dist'),
     filename: 'bundle.js'
   },
-  mode: 'development',
+  mode: isProd ? 'production' : 'development',
   resolve: {
     extensions: ['.js', '.jsx']
   },
@@ -28,7 +32,7 @@ module.exports = {
           {
             loader: 'sass-loader',
             options: {
-              implementation: require('sass'),
+              implementation: sass,
               sassOptions: {
                 fiber: false
               }
@@ -42,8 +46,14 @@ module.exports = {
     new HtmlWebpackPlugin({
       template: './public/index.html'
     }),
-    new Dotenv()
-  ],
+    new Dotenv(),
+    isProd &&
+      new webpack.DefinePlugin({
+        'process.env.REACT_APP_AWS_REGION': JSON.stringify(process.env.REACT_APP_AWS_REGION),
+        'process.env.REACT_APP_AWS_ACCESS_KEY': JSON.stringify(process.env.REACT_APP_AWS_ACCESS_KEY),
+        'process.env.REACT_APP_AWS_SECRET_ACCESS_KEY': JSON.stringify(process.env.REACT_APP_AWS_SECRET_ACCESS_KEY)
+      })
+  ].filter(Boolean), // Removes falsy plugins like "false" if not in prod
   devServer: {
     static: {
       directory: path.resolve(__dirname, 'dist')
