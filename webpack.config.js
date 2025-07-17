@@ -6,7 +6,7 @@ const sass = require('sass'); // Explicitly using Dart Sass engine
 
 // ✅ Define environment mode flag
 const isProd = process.env.NODE_ENV === 'production';
-
+console.log(isProd);
 module.exports = {
   entry: './src/index.js',
   output: {
@@ -50,7 +50,7 @@ module.exports = {
     isProd &&
       new webpack.DefinePlugin({
         'process.env.REACT_APP_AWS_REGION': JSON.stringify(process.env.REACT_APP_AWS_REGION),
-        'process.env.REACT_APP_AWS_ACCESS_KEY': JSON.stringify(process.env.REACT_APP_AWS_ACCESS_KEY),
+        'process.env.REACT_APP_AWS_ACCESS_KEY_ID': JSON.stringify(process.env.REACT_APP_AWS_ACCESS_KEY_ID),
         'process.env.REACT_APP_AWS_SECRET_ACCESS_KEY': JSON.stringify(process.env.REACT_APP_AWS_SECRET_ACCESS_KEY)
       })
   ].filter(Boolean), // Removes falsy plugins like "false" if not in prod
