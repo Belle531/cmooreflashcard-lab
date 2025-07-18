@@ -1,149 +1,64 @@
-import React, { useState } from 'react';
-import {
-  Box,
-  Text,
-  Badge,
-  VStack,
-  Button,
-  Input,
-  Flex,
-  Spacer,
-  useToast
-} from '@chakra-ui/react';
+import React, { useEffect, useState } from 'react';
+import { SimpleGrid, Text, Box } from '@chakra-ui/react';
+import { scanFlashcards, updateFlashcard as updateFlashcardInDb } from '../dynamo';
+import Flashcard from './Flashcard';
 
-function Flashcard({
-  id,
-  term,
-  definition,
-  tag,
-  deleteFlashcard,
-  updateFlashcard
-}) {
-  const [isEditing, setIsEditing] = useState(false);
-  const [editedTerm, setEditedTerm] = useState(term);
-  const [editedDefinition, setEditedDefinition] = useState(definition);
-  const [editedTag, setEditedTag] = useState(tag);
-  const toast = useToast();
+function FlashcardList() {
+  const [flashcards, setFlashcards] = useState([]);
 
-  const handleDelete = async () => {
-    if (typeof deleteFlashcard === 'function') {
-      deleteFlashcard(id);
-      toast({
-        title: 'Flashcard deleted.',
-        status: 'info',
-        duration: 3000,
-        isClosable: true
-      });
-    } else {
-      console.error('Delete function not provided');
+  useEffect(() => {
+    async function loadData() {
+      try {
+        const data = await scanFlashcards();
+        setFlashcards(data);
+      } catch (err) {
+        console.error('Error fetching flashcards:', err);
+      }
     }
+
+    loadData();
+  }, []);
+
+  const handleDeleteFlashcard = (deletedId) => {
+    setFlashcards(prev => prev.filter(fc => fc.id !== deletedId));
   };
 
-  const handleUpdate = async () => {
-    const updatedFields = {
-      term: editedTerm,
-      definition: editedDefinition,
-      tag: editedTag
-    };
-
-    if (typeof updateFlashcard === 'function') {
-      updateFlashcard(id, updatedFields);
-      toast({
-        title: 'Flashcard updated.',
-        status: 'success',
-        duration: 3000,
-        isClosable: true
-      });
-    } else {
-      console.error('Update function not provided');
+  const handleUpdateFlashcard = async (updatedId, updatedFields) => {
+    try {
+      await updateFlashcardInDb(updatedId, updatedFields);
+      setFlashcards(prev =>
+        prev.map(fc =>
+          fc.id === updatedId ? { ...fc, ...updatedFields } : fc
+        )
+      );
+    } catch (err) {
+      console.error('Failed to update flashcard:', err);
     }
-
-    setIsEditing(false);
   };
 
   return (
-    <Box
-      minH="250px"
-      display="flex"
-      flexDirection="column"
-      justifyContent="space-between"
-      borderWidth="1px"
-      borderRadius="md"
-      boxShadow="sm"
-      p={4}
-      bg="white"
-      _hover={{ boxShadow: 'md', transform: 'scale(1.02)' }}
-      transition="all 0.2s ease-in-out"
-    >
-      <Flex direction="column" justify="space-between" height="100%">
-        <Box>
-          {isEditing ? (
-            <>
-              <Input
-                size="sm"
-                value={editedTerm}
-                onChange={(e) => setEditedTerm(e.target.value)}
-                mb={2}
-              />
-              <Input
-                size="sm"
-                value={editedDefinition}
-                onChange={(e) => setEditedDefinition(e.target.value)}
-                mb={2}
-              />
-              <Input
-                size="sm"
-                value={editedTag}
-                onChange={(e) => setEditedTag(e.target.value)}
-              />
-            </>
-          ) : (
-            <>
-              <Text fontSize="lg" fontWeight="bold">{term}</Text>
-              <Text fontSize="md" noOfLines={4}>{definition}</Text>
-              {tag && (
-                <Badge colorScheme="teal" fontSize="0.8em">
-                  {tag}
-                </Badge>
-              )}
-            </>
-          )}
-        </Box>
-
-        <Flex mt={4}>
-          {isEditing ? (
-            <>
-              <Button size="sm" colorScheme="green" onClick={handleUpdate}>
-                Save
-              </Button>
-              <Spacer />
-              <Button
-                size="sm"
-                variant="outline"
-                onClick={() => setIsEditing(false)}
-              >
-                Cancel
-              </Button>
-            </>
-          ) : (
-            <>
-              <Button size="sm" colorScheme="red" onClick={handleDelete}>
-                Delete
-              </Button>
-              <Spacer />
-              <Button
-                size="sm"
-                colorScheme="blue"
-                onClick={() => setIsEditing(true)}
-              >
-                Edit
-              </Button>
-            </>
-          )}
-        </Flex>
-      </Flex>
+    <Box my={8}>
+      <Text fontSize="2xl" fontWeight="semibold" mb={4}>
+        Flashcard List
+      </Text>
+      <Text fontSize="md" mb={4} color="gray.600">
+        You’ve created {flashcards.length} flashcard{flashcards.length !== 1 ? 's' : ''}.
+      </Text>
+      <SimpleGrid columns={{ base: 1, sm: 2, md: 3 }} spacing={6}>
+        {flashcards.map(card => (
+          <Flashcard
+            key={card.id}
+            id={card.id}
+            term={card.term}
+            definition={card.definition}
+            tag={card.tag}
+            deleteFlashcard={handleDeleteFlashcard}
+            updateFlashcard={handleUpdateFlashcard}
+          />
+        ))}
+      </SimpleGrid>
     </Box>
   );
 }
 
-export default Flashcard;
+export default FlashcardList;
