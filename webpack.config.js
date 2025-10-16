@@ -54,7 +54,7 @@ module.exports = {
     static: {
       directory: path.resolve(__dirname, 'dist')
     },
-    port: 3001,
+    port: 5000,
     open: true,
     hot: true,
     liveReload: true,
