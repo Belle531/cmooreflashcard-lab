@@ -3,7 +3,11 @@ import {
   Box,
   Input,
   Button,
-  VStack,
+  FormControl,
+  FormLabel,
+  Stack,
+  Heading,
+  Textarea,
   useToast
 } from "@chakra-ui/react";
 import { v4 as uuidv4 } from "uuid";
@@ -66,35 +70,62 @@ export default function FlashcardForm() {
       as="form"
       onSubmit={handleSubmit}
       bg="gray.50"
-      p={4}
-      borderRadius="md"
-      boxShadow="md"
+      p={6}
+      borderRadius="lg"
+      boxShadow="lg"
+      maxW="600px"
+      mx="auto"
+      mt={12}
     >
-      <VStack spacing={4}>
-        <Input
-          placeholder="Term"
-          value={term}
-          onChange={(e) => setTerm(e.target.value)}
-        />
-        <Input
-          placeholder="Definition"
-          value={definition}
-          onChange={(e) => setDefinition(e.target.value)}
-        />
-        <Input
-          placeholder="Tag (e.g. frontend, aws, db)"
-          value={tag}
-          onChange={(e) => setTag(e.target.value)}
-        />
+      <Stack spacing={6}>
+        <Heading size="md" textAlign="center">
+          Add a New Flashcard
+        </Heading>
+
+        <FormControl isRequired>
+          <FormLabel mb={1}>Term</FormLabel>
+          <Input
+            value={term}
+            onChange={(e) => setTerm(e.target.value)}
+            placeholder="e.g. React"
+            variant="filled"
+            autoFocus
+          />
+        </FormControl>
+
+        <FormControl isRequired>
+          <FormLabel mb={1}>Definition</FormLabel>
+          <Textarea
+            value={definition}
+            onChange={(e) => setDefinition(e.target.value)}
+            placeholder="e.g. A JavaScript library for building UIs"
+            variant="filled"
+            resize="vertical"
+            minH="80px"
+          />
+        </FormControl>
+
+        <FormControl isRequired>
+          <FormLabel mb={1}>Tag</FormLabel>
+          <Input
+            value={tag}
+            onChange={(e) => setTag(e.target.value)}
+            placeholder="e.g. frontend, aws, db"
+            variant="filled"
+          />
+        </FormControl>
+
         <Button
           type="submit"
-          colorScheme="green"
+          colorScheme="teal"
           isLoading={isLoading}
           loadingText="Adding..."
+          size="lg"
+          _hover={{ transform: 'scale(1.01)' }}
         >
-          Add Flashcard
+          Save Flashcard
         </Button>
-      </VStack>
+      </Stack>
     </Box>
   );
 }

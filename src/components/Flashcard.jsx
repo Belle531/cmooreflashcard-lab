@@ -1,64 +1,160 @@
-import React, { useEffect, useState } from 'react';
-import { SimpleGrid, Text, Box } from '@chakra-ui/react';
-import { scanFlashcards, updateFlashcard as updateFlashcardInDb } from '../dynamo';
-import Flashcard from './Flashcard';
+import React, { useState } from 'react';
+import {
+  Box,
+  Text,
+  Badge,
+  VStack,
+  Button,
+  Input,
+  Flex,
+  Spacer,
+  useToast,
+  Heading,
+  FormControl,
+  FormLabel
+} from '@chakra-ui/react';
 
-function FlashcardList() {
-  const [flashcards, setFlashcards] = useState([]);
+function Flashcard({
+  id,
+  term,
+  definition,
+  tag,
+  deleteFlashcard,
+  updateFlashcard
+}) {
+  const [isEditing, setIsEditing] = useState(false);
+  const [editedTerm, setEditedTerm] = useState(term);
+  const [editedDefinition, setEditedDefinition] = useState(definition);
+  const [editedTag, setEditedTag] = useState(tag);
+  const toast = useToast();
 
-  useEffect(() => {
-    async function loadData() {
-      try {
-        const data = await scanFlashcards();
-        setFlashcards(data);
-      } catch (err) {
-        console.error('Error fetching flashcards:', err);
-      }
+  const handleDelete = async () => {
+    if (typeof deleteFlashcard === 'function') {
+      deleteFlashcard(id);
+      toast({
+        title: 'Flashcard deleted.',
+        status: 'info',
+        duration: 3000,
+        isClosable: true
+      });
+    } else {
+      console.error('Delete function not provided');
     }
-
-    loadData();
-  }, []);
-
-  const handleDeleteFlashcard = (deletedId) => {
-    setFlashcards(prev => prev.filter(fc => fc.id !== deletedId));
   };
 
-  const handleUpdateFlashcard = async (updatedId, updatedFields) => {
-    try {
-      await updateFlashcardInDb(updatedId, updatedFields);
-      setFlashcards(prev =>
-        prev.map(fc =>
-          fc.id === updatedId ? { ...fc, ...updatedFields } : fc
-        )
-      );
-    } catch (err) {
-      console.error('Failed to update flashcard:', err);
+  const handleUpdate = async () => {
+    const updatedFields = {
+      term: editedTerm,
+      definition: editedDefinition,
+      tag: editedTag
+    };
+
+    if (typeof updateFlashcard === 'function') {
+      updateFlashcard(id, updatedFields);
+      toast({
+        title: 'Flashcard updated.',
+        status: 'success',
+        duration: 3000,
+        isClosable: true
+      });
+    } else {
+      console.error('Update function not provided');
     }
+
+    setIsEditing(false);
   };
 
   return (
-    <Box my={8}>
-      <Text fontSize="2xl" fontWeight="semibold" mb={4}>
-        Flashcard List
-      </Text>
-      <Text fontSize="md" mb={4} color="gray.600">
-        You’ve created {flashcards.length} flashcard{flashcards.length !== 1 ? 's' : ''}.
-      </Text>
-      <SimpleGrid columns={{ base: 1, sm: 2, md: 3 }} spacing={6}>
-        {flashcards.map(card => (
-          <Flashcard
-            key={card.id}
-            id={card.id}
-            term={card.term}
-            definition={card.definition}
-            tag={card.tag}
-            deleteFlashcard={handleDeleteFlashcard}
-            updateFlashcard={handleUpdateFlashcard}
-          />
-        ))}
-      </SimpleGrid>
+    <Box
+      minH="320px"
+      maxW="600px"
+      mx="auto"
+      bg="white"
+      p={6}
+      borderRadius="lg"
+      boxShadow="xl"
+      transition="all 0.2s ease"
+    >
+      <VStack align="stretch" spacing={5}>
+        <Heading size="md" textAlign="center">
+          Flashcard
+        </Heading>
+
+        {isEditing ? (
+          <>
+            <FormControl>
+              <FormLabel>Term</FormLabel>
+              <Input
+                value={editedTerm}
+                onChange={(e) => setEditedTerm(e.target.value)}
+                variant="filled"
+              />
+            </FormControl>
+
+            <FormControl>
+              <FormLabel>Definition</FormLabel>
+              <Input
+                value={editedDefinition}
+                onChange={(e) => setEditedDefinition(e.target.value)}
+                variant="filled"
+              />
+            </FormControl>
+
+            <FormControl>
+              <FormLabel>Tag</FormLabel>
+              <Input
+                value={editedTag}
+                onChange={(e) => setEditedTag(e.target.value)}
+                variant="filled"
+              />
+            </FormControl>
+          </>
+        ) : (
+          <>
+            <Text fontSize="lg" fontWeight="semibold">
+              {term}
+            </Text>
+            <Text fontSize="md" color="gray.700">
+              {definition}
+            </Text>
+            {tag && (
+              <Badge colorScheme="teal" fontSize="0.85em" mt={1}>
+                {tag}
+              </Badge>
+            )}
+          </>
+        )}
+
+        <Flex pt={4}>
+          {isEditing ? (
+            <>
+              <Button size="sm" colorScheme="green" onClick={handleUpdate}>
+                Save
+              </Button>
+              <Spacer />
+              <Button size="sm" variant="outline" onClick={() => setIsEditing(false)}>
+                Cancel
+              </Button>
+            </>
+          ) : (
+            <>
+              <Button size="sm" colorScheme="red" onClick={handleDelete}>
+                Delete
+              </Button>
+              <Spacer />
+              <Button
+                size="sm"
+                colorScheme="blue"
+                onClick={() => setIsEditing(true)}
+              >
+                Edit
+              </Button>
+            </>
+          )}
+        </Flex>
+      </VStack>
     </Box>
   );
 }
 
-export default FlashcardList;
+export default Flashcard;

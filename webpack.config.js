@@ -4,10 +4,11 @@ const HtmlWebpackPlugin = require('html-webpack-plugin');
 const Dotenv = require('dotenv-webpack');
 const sass = require('sass'); // Explicitly using Dart Sass engine
 
-// ✅ Define environment mode flag code fixed form const isProd = process.env.NODE_ENV ==='production'; to line 8
-const isProd = process.env.NODE_ENV !='development';
+// ✅ Define environment mode
+const isProd = process.env.NODE_ENV !== 'development';
 console.log("prod", isProd);
-console.log (process.env.NODE_ENV)
+console.log(process.env.NODE_ENV);
+
 module.exports = {
   entry: './src/index.js',
   output: {
@@ -47,19 +48,13 @@ module.exports = {
     new HtmlWebpackPlugin({
       template: './public/index.html'
     }),
-    new Dotenv(),
-    isProd &&
-      new webpack.DefinePlugin({
-        'process.env.REACT_APP_AWS_REGION': JSON.stringify(process.env.REACT_APP_AWS_REGION),
-        'process.env.REACT_APP_AWS_ACCESS_KEY_ID': JSON.stringify(process.env.REACT_APP_AWS_ACCESS_KEY_ID),
-        'process.env.REACT_APP_AWS_SECRET_ACCESS_KEY': JSON.stringify(process.env.REACT_APP_AWS_SECRET_ACCESS_KEY)
-      })
-  ].filter(Boolean), // Removes falsy plugins like "false" if not in prod
+    new Dotenv()
+  ].filter(Boolean), // ✅ Correct placement inside plugins array
   devServer: {
     static: {
       directory: path.resolve(__dirname, 'dist')
     },
-    port: 3000,
+    port: 3001,
     open: true,
     hot: true,
     liveReload: true,
@@ -72,5 +67,3 @@ module.exports = {
     warningsFilter: [/sass-loader/]
   }
 };
-
-
